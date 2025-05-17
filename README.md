@@ -10,7 +10,7 @@ A simple Flask app that authenticates users via phone using Twilio Verify. Users
 pip install -r requirements.txt
 ```
 
-2. Copy `.env.example` to `.env` and fill in your credentials.
+2. Copy `.env.example` to `.env` and fill in your credentials. Make sure `SECRET_KEY` is a secure random value (e.g. `openssl rand -hex 32`).
 
 3. Run the app:
 
@@ -19,3 +19,4 @@ flask run
 ```
 
 4. Configure your Twilio phone number's webhook to point to `/sms` on your server.
+5. For extra security, verify incoming Twilio requests. See the [Twilio webhook security guide](https://www.twilio.com/docs/usage/webhooks/webhooks-security).
