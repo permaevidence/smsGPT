@@ -1,0 +1,23 @@
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg-info/
+
+# Virtual environments
+.env
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+
+# Logs
+*.log
+
+# Mac OS metadata
+.DS_Store
