@@ -1,0 +1,9 @@
+<!doctype html>
+<title>Purchase Credit</title>
+<h1>Purchase Credit</h1>
+<p>Current Credit: ${{ '%.2f' % user.credit }}</p>
+<form method="post">
+  <label>Amount (max $20):</label>
+  <input type="number" step="0.01" name="amount" max="20" required>
+  <button type="submit">Add Credit</button>
+</form>
