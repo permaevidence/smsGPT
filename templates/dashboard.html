@@ -1,0 +1,6 @@
+<!doctype html>
+<title>Dashboard</title>
+<h1>Welcome {{ user.phone_number }}</h1>
+<p>Credit: ${{ '%.2f' % user.credit }}</p>
+<a href="{{ url_for('purchase') }}">Buy Credit</a> |
+<a href="{{ url_for('logout') }}">Logout</a>
