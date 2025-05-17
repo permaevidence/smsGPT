@@ -19,3 +19,8 @@ flask run
 ```
 
 4. Configure your Twilio phone number's webhook to point to `/sms` on your server.
+
+## Limitations
+
+Credit purchasing is currently mocked for demonstration purposes and is **not**
+integrated with Stripe yet.
