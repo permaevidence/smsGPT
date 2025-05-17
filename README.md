@@ -1,6 +1,7 @@
 # smsGPT
 
 A simple Flask app that authenticates users via phone using Twilio Verify. Users can purchase up to $20 of credit and interact with OpenRouter's Gemini model via SMS. Each message sent or received deducts a small amount of credit.
+Payments for credit are handled through Stripe Checkout.
 
 ## Setup
 
@@ -11,6 +12,8 @@ pip install -r requirements.txt
 ```
 
 2. Copy `.env.example` to `.env` and fill in your credentials. Make sure `SECRET_KEY` is a secure random value (e.g. `openssl rand -hex 32`).
+
+   You'll also need a Stripe secret key in `STRIPE_SECRET_KEY` to enable credit purchases.
 
 3. Run the app:
 

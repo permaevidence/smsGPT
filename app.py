@@ -1,17 +1,19 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
+import stripe
 from twilio.rest import Client
 import requests
 
 from config import Config
-from models import db, User, MessageLog
+from models import db, User, MessageLog, Payment
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
 client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
+stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
 
 @app.before_first_request
@@ -78,12 +80,45 @@ def purchase():
         if amount <= 0 or amount > 20:
             flash('Amount must be between $1 and $20.')
             return redirect(url_for('purchase'))
-        # Placeholder for Stripe integration
-        user.credit += amount
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {'name': 'SMS Credit'},
+                    'unit_amount': int(amount * 100)
+                },
+                'quantity': 1
+            }],
+            mode='payment',
+            metadata={'user_id': user.id, 'amount': amount},
+            success_url=url_for('payment_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=url_for('purchase', _external=True)
+        )
+        payment = Payment(user_id=user.id, session_id=checkout_session.id, amount=amount)
+        db.session.add(payment)
         db.session.commit()
-        flash(f'Added ${amount:.2f} credit.')
-        return redirect(url_for('index'))
+        return redirect(checkout_session.url, code=303)
     return render_template('purchase.html', user=user)
+
+
+@app.route('/payment/success')
+def payment_success():
+    session_id = request.args.get('session_id')
+    if not session_id:
+        return redirect(url_for('index'))
+    checkout_session = stripe.checkout.Session.retrieve(session_id)
+    payment = Payment.query.filter_by(session_id=session_id).first()
+    if not payment:
+        flash('Payment not found.')
+        return redirect(url_for('index'))
+    if checkout_session.payment_status == 'paid' and payment.status != 'paid':
+        user = User.query.get(payment.user_id)
+        user.credit += payment.amount
+        payment.status = 'paid'
+        db.session.commit()
+        flash(f'Added ${payment.amount:.2f} credit.')
+    return redirect(url_for('index'))
 
 
 def deduct_credit(user, cost, direction, body):
